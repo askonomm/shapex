@@ -51,13 +51,13 @@ npm i @askonmm/eventx
 At the core of your application is state. You start by initiating EventX with some initial state, like so:
 
 ```typescript
-import eventx from "@askonmm/eventx";
+import EventX from "@askonmm/eventx";
 
 type AppState = {
   counter: number;
 };
 
-const $ = eventx<AppState>({
+const $ = EventX<AppState>({
   counter: 1,
 });
 ```
