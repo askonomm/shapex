@@ -1,6 +1,6 @@
 {
   "name": "@askonmm/eventx",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A scalable event-driven application framework.",
   "main": "dist/eventx.cjs",
   "module": "dist/eventx.js",
