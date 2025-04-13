@@ -197,7 +197,7 @@ So now if `some-event-name` is dispatched, it also dispatches `counter-increase`
 
 #### Get the subscription count
 
-If you want to get the number of subscriptions for a specific event or state change, you can use the `$.getSubscriptionCount` method. This method takes the event or state change name as its argument and returns the number of subscriptions.
+If you want to get the number of subscriptions for a specific event or state change, you can use the `$.subscriptionCount` method. This method takes the event or state change name as its argument and returns the number of subscriptions.
 
 ```typescript
 // State change subscriptions
