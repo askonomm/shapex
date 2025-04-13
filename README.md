@@ -7,7 +7,7 @@ Create scaleable event-driven applications with EventX, inspired by [re-frame](h
 This is an example application that demonstrates how to use the EventX library. It has a single starting point event called `request`, which returns an updated state, which changes the `counter`. When that state changes, the subscriber for the `counter` state fires.
 
 ```typescript
-import EventX from "eventx";
+import EventX from "@askonmm/eventx";
 
 type AppState = {
   counter: number;
@@ -51,7 +51,7 @@ npm i @askonmm/eventx
 At the core of your application is state. You start by initiating EventX with some initial state, like so:
 
 ```typescript
-import eventx from "eventx";
+import eventx from "@askonmm/eventx";
 
 type AppState = {
   counter: number;
@@ -201,10 +201,10 @@ If you want to get the number of subscriptions for a specific event or state cha
 
 ```typescript
 // State change subscriptions
-$.getSubscriptionCount("$counter");
+$.subscriptionCount("$counter");
 
 // Event subscriptions
-$.getSubscriptionCount("some-event-name");
+$.subscriptionCount("some-event-name");
 ```
 
 #### Get all subscriptions
