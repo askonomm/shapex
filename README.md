@@ -1,19 +1,19 @@
-# EventX
+# ShapeX
 
-Create scaleable event-driven applications with EventX, inspired by [re-frame](https://github.com/day8/re-frame/). EventX uses zero dependencies and is runtime agnostic, meaning that you can use it in Node, Deno, Bun, browsers, or really anywhere where JavaScript runs.
+Create scalable event-driven applications with ShapeX, inspired by [re-frame](https://github.com/day8/re-frame/). ShapeX uses zero dependencies and is runtime agnostic, meaning that you can use it in Node, Deno, Bun, browsers, or really anywhere where JavaScript runs.
 
 ## Example application
 
-This is an example application that demonstrates how to use the EventX library. It has a single starting point event called `request`, which returns an updated state, which changes the `counter`. When that state changes, the subscriber for the `counter` state fires.
+This is an example application that demonstrates how to use the ShapeX library. It has a single starting point event called `request`, which returns an updated state, which changes the `counter`. When that state changes, the subscriber for the `counter` state fires.
 
 ```typescript
-import EventX from "@askonmm/eventx";
+import ShapeX from "ShapeX";
 
 type AppState = {
   counter: number;
 };
 
-const $ = EventX<AppState>({
+const $ = ShapeX<AppState>({
   counter: 1,
 });
 
@@ -41,23 +41,23 @@ $.dispatch("request");
 ## Installation
 
 ```shell
-npm i @askonmm/eventx
+npm i shapex
 ```
 
 ## Documentation
 
 ### State
 
-At the core of your application is state. You start by initiating EventX with some initial state, like so:
+At the core of your application is state. You start by initiating ShapeX with some initial state, like so:
 
 ```typescript
-import EventX from "@askonmm/eventx";
+import ShapeX from "shapex";
 
 type AppState = {
   counter: number;
 };
 
-const $ = EventX<AppState>({
+const $ = ShapeX<AppState>({
   counter: 1,
 });
 ```
@@ -109,7 +109,7 @@ $.subscribe("$counter", (state) => {
 });
 ```
 
-Notable difference here is the `$` prefix in the subscription listener name, which tells EventX what state to look for. Here `$counter` will look for the root-level `counter` key in state. To look for nested state, simply add a dot (`.`) followed by the key name, i.e: `$counter.nestedKey`. Additionally, state change subscriptions do not get any additional data passed to them, only state.
+Notable difference here is the `$` prefix in the subscription listener name, which tells ShapeX what state to look for. Here `$counter` will look for the root-level `counter` key in state. To look for nested state, simply add a dot (`.`) followed by the key name, i.e: `$counter.nestedKey`. Additionally, state change subscriptions do not get any additional data passed to them, only state.
 
 #### Subscribe only once
 

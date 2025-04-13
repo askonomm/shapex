@@ -1,9 +1,9 @@
 {
-  "name": "@askonmm/eventx",
+  "name": "shapex",
   "version": "1.0.3",
   "description": "A scalable event-driven application framework.",
-  "main": "dist/eventx.cjs",
-  "module": "dist/eventx.js",
+  "main": "dist/shapex.cjs",
+  "module": "dist/shapex.js",
   "type": "module",
   "license": "MIT",
   "keywords": [
@@ -13,15 +13,15 @@
     "subscriptions"
   ],
   "bugs": {
-    "url": "https://github.com/askonomm/eventx/issues",
+    "url": "https://github.com/askonomm/shapex/issues",
     "email": "asko@nmm.ee"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/askonomm/eventx.git"
+    "url": "git+https://github.com/askonomm/shapex.git"
   },
   "scripts": {
-    "bundle": "tsup src/eventx.ts",
+    "bundle": "tsup src/shapex.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },

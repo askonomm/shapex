@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/eventx.ts"],
+  entry: ["src/shapex.ts"],
   clean: true,
   format: ["esm", "cjs"],
   dts: true,

@@ -1,17 +1,17 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
-import EventX from "./eventx";
+import ShapeX from "./shapex.ts";
 
 describe("EventX", () => {
   describe("subscribe", () => {
     test("subscribes to an event", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       const id = $.subscribe("test-event", (state) => ({ state }));
       expect(id).toBe(1);
       expect($.subscriptionCount("test-event")).toBe(1);
     });
 
     test("subscribes to an event once", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       const id = $.subscribeOnce("test-event", (state) => ({ state }));
       expect(id).toBe(1);
       expect($.subscriptionCount("test-event")).toBe(1);
@@ -22,7 +22,7 @@ describe("EventX", () => {
     });
 
     test("unsubscribes from an event", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       $.subscribe("test-event", (state) => ({ state }));
       expect($.subscriptionCount("test-event")).toBe(1);
 
@@ -33,7 +33,7 @@ describe("EventX", () => {
 
   describe("dispatch", () => {
     test("dispatches an event without arguments", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       const callback = vi.fn((state) => ({ state }));
 
       $.subscribe("test-event", callback);
@@ -44,7 +44,7 @@ describe("EventX", () => {
     });
 
     test("dispatches an event with arguments", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       const callback = vi.fn((state, arg1, arg2) => ({ state }));
 
       $.subscribe("test-event", callback);
@@ -55,7 +55,7 @@ describe("EventX", () => {
     });
 
     test("updates state when event handler returns new state", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       const stateChangeSpy = vi.fn((state) => ({ state }));
 
       $.subscribe("$counter", stateChangeSpy);
@@ -70,7 +70,7 @@ describe("EventX", () => {
     });
 
     test("dispatches nested events", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       const nestedEventSpy = vi.fn((state) => ({ state }));
 
       $.subscribe("nested-event", nestedEventSpy);
@@ -85,7 +85,7 @@ describe("EventX", () => {
     });
 
     test("dispatches multiple nested events", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       const nestedEvent1Spy = vi.fn((state) => ({ state }));
       const nestedEvent2Spy = vi.fn((state) => ({ state }));
 
@@ -103,7 +103,7 @@ describe("EventX", () => {
     });
 
     test("dispatches nested events with arguments", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       const nestedEventSpy = vi.fn((state, arg) => ({ state }));
 
       $.subscribe("nested-event", nestedEventSpy);
@@ -121,7 +121,7 @@ describe("EventX", () => {
 
   describe("state change detection", () => {
     test("detects value changes in state", () => {
-      const $ = EventX({ counter: 1, nested: { value: "test" } });
+      const $ = ShapeX({ counter: 1, nested: { value: "test" } });
       const counterChangeSpy = vi.fn((state) => ({ state }));
 
       $.subscribe("$counter", counterChangeSpy);
@@ -136,7 +136,7 @@ describe("EventX", () => {
     });
 
     test("detects nested value changes in state", () => {
-      const $ = EventX({ counter: 1, nested: { value: "test" } });
+      const $ = ShapeX({ counter: 1, nested: { value: "test" } });
       const nestedValueChangeSpy = vi.fn((state) => ({ state }));
 
       $.subscribe("$nested.value", nestedValueChangeSpy);
@@ -157,7 +157,7 @@ describe("EventX", () => {
     });
 
     test("detects deleted properties in state", () => {
-      const $ = EventX({ counter: 1, toDelete: "value" } as { counter: number; toDelete?: string });
+      const $ = ShapeX({ counter: 1, toDelete: "value" } as { counter: number; toDelete?: string });
       const deleteChangeSpy = vi.fn((state) => ({ state }));
 
       $.subscribe("$toDelete", deleteChangeSpy);
@@ -172,7 +172,7 @@ describe("EventX", () => {
     });
 
     test("detects type changes in state", () => {
-      const $ = EventX({ counter: 1 } as { counter: string | number });
+      const $ = ShapeX({ counter: 1 } as { counter: string | number });
       const counterChangeSpy = vi.fn((state) => ({ state }));
 
       $.subscribe("$counter", counterChangeSpy);
@@ -188,7 +188,7 @@ describe("EventX", () => {
 
   describe("utility methods", () => {
     test("returns all subscription names", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       $.subscribe("event1", (state) => ({ state }));
       $.subscribe("event2", (state) => ({ state }));
 
@@ -199,7 +199,7 @@ describe("EventX", () => {
     });
 
     test("returns subscription count for specific event", () => {
-      const $ = EventX({ counter: 1 });
+      const $ = ShapeX({ counter: 1 });
       $.subscribe("event1", (state) => ({ state }));
       $.subscribe("event1", (state) => ({ state }));
       $.subscribe("event2", (state) => ({ state }));
