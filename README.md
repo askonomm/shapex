@@ -7,7 +7,7 @@ Create scalable event-driven applications with ShapeX, inspired by [re-frame](ht
 This is an example application that demonstrates how to use the ShapeX library. It has a single starting point event called `request`, which returns an updated state, which changes the `counter`. When that state changes, the subscriber for the `counter` state fires.
 
 ```typescript
-import ShapeX from "ShapeX";
+import ShapeX from "shapex";
 
 type AppState = {
   counter: number;
