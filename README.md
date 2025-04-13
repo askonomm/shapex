@@ -41,7 +41,7 @@ $.dispatch("request");
 ## Installation
 
 ```shell
-npm i eventx
+npm i @askonmm/eventx
 ```
 
 ## Documentation

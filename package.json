@@ -1,9 +1,9 @@
 {
-  "name": "eventx",
+  "name": "@askonmm/eventx",
   "version": "1.0.0",
   "description": "A scalable event-driven application framework.",
-  "main": "dist/eventx.js",
-  "module": "dist/eventx.mjs",
+  "main": "dist/eventx.cjs",
+  "module": "dist/eventx.js",
   "type": "module",
   "license": "MIT",
   "keywords": [
