@@ -1,5 +1,3 @@
-export type EventDispatcher = (eventName: string, ...args: unknown[]) => void;
-
 type SubscriptionResponseDispatch = {
   eventName: string;
   args?: unknown[];
