@@ -1,11 +1,11 @@
 export type EventDispatcher = (eventName: string, ...args: unknown[]) => void;
 
-export type SubscriptionResponseDispatch = {
+type SubscriptionResponseDispatch = {
   eventName: string;
   args?: unknown[];
 };
 
-export type SubscriptionResponse<T> = {
+type SubscriptionResponse<T> = {
   state?: T;
   dispatch?: SubscriptionResponseDispatch | SubscriptionResponseDispatch[];
 };
@@ -14,17 +14,17 @@ const isSubscriptionResponseList = (
   dispatch: SubscriptionResponseDispatch | SubscriptionResponseDispatch[],
 ): dispatch is SubscriptionResponseDispatch[] => Array.isArray(dispatch);
 
-export type EventCallback<T> = (state: T, ...args: any[]) => SubscriptionResponse<T>;
+type EventCallback<T> = (state: T, ...args: any[]) => SubscriptionResponse<T>;
 
-export type Subscription<T> = {
+type Subscription<T> = {
   listener: string;
   callback: EventCallback<T>;
   once: boolean;
 };
 
-export type StateChange = "deleted" | "changed-type" | "changed-value";
+type StateChange = "deleted" | "changed-type" | "changed-value";
 
-export type ShapeXInstance<T> = {
+type ShapeXInstance<T> = {
   subscribe: (listener: string, callback: EventCallback<T>) => number;
   subscribeOnce: (listener: string, callback: EventCallback<T>) => number;
   unsubscribe: (listener: string) => void;
@@ -37,9 +37,9 @@ export type ShapeXInstance<T> = {
  * A function that creates an EventX object.
  *
  * @param {T extends object} initialState The initial application state.
- * @returns {EventX<T>} The EventX object.
+ * @returns {ShapeXInstance<T>} The ShapeX object.
  */
-const ShapeX = <T extends object>(initialState: T): ShapeXInstance<T> => {
+export default function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
   let _state = initialState;
   const _subscriptions: Map<string, Subscription<T>[]> = new Map();
   let subscriptionId = 0;
@@ -229,6 +229,4 @@ const ShapeX = <T extends object>(initialState: T): ShapeXInstance<T> => {
     subscriptions,
     dispatch,
   };
-};
-
-export default ShapeX;
+}
