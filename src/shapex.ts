@@ -24,7 +24,7 @@ export type Subscription<T> = {
 
 export type StateChange = "deleted" | "changed-type" | "changed-value";
 
-export type ShapeX<T> = {
+export type ShapeXInstance<T> = {
   subscribe: (listener: string, callback: EventCallback<T>) => number;
   subscribeOnce: (listener: string, callback: EventCallback<T>) => number;
   unsubscribe: (listener: string) => void;
@@ -39,7 +39,7 @@ export type ShapeX<T> = {
  * @param {T extends object} initialState The initial application state.
  * @returns {EventX<T>} The EventX object.
  */
-const ShapeX = <T extends object>(initialState: T): ShapeX<T> => {
+const ShapeX = <T extends object>(initialState: T): ShapeXInstance<T> => {
   let _state = initialState;
   const _subscriptions: Map<string, Subscription<T>[]> = new Map();
   let subscriptionId = 0;
