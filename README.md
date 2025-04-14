@@ -13,11 +13,11 @@ type AppState = {
   counter: number;
 };
 
-const $ = ShapeX<AppState>({
+const app = ShapeX<AppState>({
   counter: 1,
 });
 
-$.subscribe("$counter", (state) => {
+app.subscribe("$counter", (state) => {
   console.log("counter changed", state);
 
   return {
@@ -25,7 +25,7 @@ $.subscribe("$counter", (state) => {
   };
 });
 
-$.subscribe("request", (state) => {
+app.subscribe("request", (state) => {
   return {
     state: {
       ...state,
@@ -35,7 +35,7 @@ $.subscribe("request", (state) => {
 });
 
 // Dispatch an event somewhere.
-$.dispatch("request");
+app.dispatch("request");
 ```
 
 ## Installation
@@ -57,7 +57,7 @@ type AppState = {
   counter: number;
 };
 
-const $ = ShapeX<AppState>({
+const app = ShapeX<AppState>({
   counter: 1,
 });
 ```
@@ -69,25 +69,35 @@ You can model your `AppState` however you like. It does not have to be called `A
 Events set things in motion. You can dispatch events like so:
 
 ```typescript
-$.dispatch("some-event-name");
+app.dispatch("some-event-name");
 ```
 
 And, if there's a subscription for that event name, that subscription will then fire. The above example is a data-less event, but you can also dispatch events with data, like so:
 
 ```typescript
-$.dispatch("some-event-name", arg1, arg2, arg3);
+app.dispatch("some-event-name", arg1, arg2, arg3);
 ```
 
 ### Subscriptions
 
-Subscriptions listen to events or changes to state. Each subscription must return a `Response` object.
+Subscriptions listen to events or changes to state. Each subscription must return a `SubscriptionResponse` object, which looks like this:
+
+```typescript
+{
+  state: T, // state is required
+  dispatch: {
+    eventName: "event-to-dispatch",
+    args: [arg1, arg2] // args are optional
+  } // dispatch is optional
+}
+```
 
 #### Event subscriptions
 
 You can listen to events like so:
 
 ```typescript
-$.subscribe("some-event-name", (state, arg1, arg2, arg3) => {
+app.subscribe("some-event-name", (state, arg1, arg2, arg3) => {
   return {
     state,
   };
@@ -102,7 +112,7 @@ when the event was dispatched. Subscription callbacks must return an `Response` 
 You can also listen to state changes with subscriptions, which will fire when the listened state changes. You can listen to state changes like so:
 
 ```typescript
-$.subscribe("$counter", (state) => {
+app.subscribe("$counter", (state) => {
   return {
     state,
   };
@@ -113,10 +123,10 @@ Notable difference here is the `$` prefix in the subscription listener name, whi
 
 #### Subscribe only once
 
-If you want to subscribe to an event or state change only once, you can use the `$.subscribeOnce` method. This method works similarly to `$.subscribe`, but it will automatically unsubscribe after the first event or state change.
+If you want to subscribe to an event or state change only once, you can use the `subscribeOnce` method. This method works similarly to `subscribe`, but it will automatically unsubscribe after the first event or state change.
 
 ```typescript
-$.subscribeOnce("$counter", (state) => {
+app.subscribeOnce("$counter", (state) => {
   return {
     state,
   };
@@ -125,10 +135,10 @@ $.subscribeOnce("$counter", (state) => {
 
 #### Unsubscribe
 
-If you want to unsubscribe from an event or state change, you can use the `$.unsubscribe` method. This method takes the event or state change name as its argument and removes the subscription.
+If you want to unsubscribe from an event or state change, you can use the `unsubscribe` method. This method takes the event or state change name as its argument and removes the subscription.
 
 ```typescript
-$.unsubscribe("counter++");
+app.unsubscribe("counter++");
 ```
 
 #### Change state
@@ -136,7 +146,7 @@ $.unsubscribe("counter++");
 You can change state by returning a new state object, like so:
 
 ```typescript
-$.subscribe("counter++", (state) => {
+app.subscribe("counter++", (state) => {
   return {
     state: {
       ...state,
@@ -146,12 +156,12 @@ $.subscribe("counter++", (state) => {
 });
 ```
 
-#### Dispatch events
+#### Dispatch events from subscriptions
 
 You can also dispatch events from within subscriptions, like so:
 
 ```typescript
-$.subscribe("counter++", (state) => {
+app.subscribe("counter++", (state) => {
   return {
     state: {
       ...state,
@@ -160,7 +170,7 @@ $.subscribe("counter++", (state) => {
   };
 });
 
-$.subscribe("some-event-name", (state) => {
+app.subscribe("some-event-name", (state) => {
   return {
     state,
     dispatch: {
@@ -173,7 +183,7 @@ $.subscribe("some-event-name", (state) => {
 Now if `some-event-name` is dispatched, it also dispatches `counter++`. You can also pass data along, like so:
 
 ```typescript
-$.subscribe("counter-increase", (state, increase: number) => {
+app.subscribe("counter-increase", (state, increase: number) => {
   return {
     state: {
       ...state,
@@ -182,7 +192,7 @@ $.subscribe("counter-increase", (state, increase: number) => {
   };
 });
 
-$.subscribe("some-event-name", (state) => {
+app.subscribe("some-event-name", (state) => {
   return {
     state,
     dispatch: {
@@ -197,20 +207,20 @@ So now if `some-event-name` is dispatched, it also dispatches `counter-increase`
 
 #### Get the subscription count
 
-If you want to get the number of subscriptions for a specific event or state change, you can use the `$.subscriptionCount` method. This method takes the event or state change name as its argument and returns the number of subscriptions.
+If you want to get the number of subscriptions for a specific event or state change, you can use the `subscriptionCount` method. This method takes the event or state change name as its argument and returns the number of subscriptions.
 
 ```typescript
 // State change subscriptions
-$.subscriptionCount("$counter");
+app.subscriptionCount("$counter");
 
 // Event subscriptions
-$.subscriptionCount("some-event-name");
+app.subscriptionCount("some-event-name");
 ```
 
 #### Get all subscriptions
 
-If you want to get all subscriptions, you can use the `$.subscriptions` method. This method returns an array of all the subscription names.
+If you want to get all subscriptions, you can use the `subscriptions` method. This method returns an array of all the subscription names.
 
 ```typescript
-$.subscriptions();
+app.subscriptions();
 ```

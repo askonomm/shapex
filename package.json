@@ -1,6 +1,6 @@
 {
   "name": "shapex",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A scalable event-driven application framework.",
   "main": "dist/shapex.js",
   "type": "module",
