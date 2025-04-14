@@ -1,9 +1,8 @@
 {
   "name": "shapex",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A scalable event-driven application framework.",
-  "main": "dist/shapex.cjs",
-  "module": "dist/shapex.js",
+  "main": "dist/shapex.js",
   "type": "module",
   "license": "MIT",
   "keywords": [
