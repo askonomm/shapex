@@ -17,7 +17,7 @@ const app = ShapeX<AppState>({
   counter: 1,
 });
 
-app.subscribe("$counter", (state) => {
+app.subscribe("$.counter", (state) => {
   console.log("counter changed", state);
 
   return {
@@ -112,21 +112,21 @@ when the event was dispatched. Subscription callbacks must return an `Response` 
 You can also listen to state changes with subscriptions, which will fire when the listened state changes. You can listen to state changes like so:
 
 ```typescript
-app.subscribe("$counter", (state) => {
+app.subscribe("$.counter", (state) => {
   return {
     state,
   };
 });
 ```
 
-Notable difference here is the `$` prefix in the subscription listener name, which tells ShapeX what state to look for. Here `$counter` will look for the root-level `counter` key in state. To look for nested state, simply add a dot (`.`) followed by the key name, i.e: `$counter.nestedKey`. Additionally, state change subscriptions do not get any additional data passed to them, only state.
+Notable difference here is the `$.` prefix in the subscription listener name, which tells ShapeX what state to look for. Here `$.counter` will look for the root-level `counter` key in state. To look for nested state, simply add a dot (`.`) followed by the key name, i.e: `$.counter.nestedKey`. Additionally, state change subscriptions do not get any additional data passed to them, only state.
 
 #### Subscribe only once
 
 If you want to subscribe to an event or state change only once, you can use the `subscribeOnce` method. This method works similarly to `subscribe`, but it will automatically unsubscribe after the first event or state change.
 
 ```typescript
-app.subscribeOnce("$counter", (state) => {
+app.subscribeOnce("$.counter", (state) => {
   return {
     state,
   };
@@ -211,7 +211,7 @@ If you want to get the number of subscriptions for a specific event or state cha
 
 ```typescript
 // State change subscriptions
-app.subscriptionCount("$counter");
+app.subscriptionCount("$.counter");
 
 // Event subscriptions
 app.subscriptionCount("some-event-name");

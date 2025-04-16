@@ -20,7 +20,7 @@ type Subscription<T> = {
   once: boolean;
 };
 
-type StateChange = "deleted" | "changed-type" | "changed-value";
+type StateChange = "added" | "deleted" | "changed-type" | "changed-value";
 
 type ShapeXInstance<T> = {
   subscribe: (listener: string, callback: EventCallback<T>) => number;
@@ -95,54 +95,57 @@ export default function ShapeX<T extends object>(initialState: T): ShapeXInstanc
    *
    * @param {T extends object} oldState
    * @param {T extends object} newState
-   * @param {string} path
-   * @returns {StateChange[]} The list of changes.
+   * @returns {string[]} The list of changes as array of paths.
    */
-  const changedState = <T extends object>(
-    oldState: T,
-    newState: T,
-    path: string = "",
-  ): Map<string, StateChange> => {
-    let changes: Map<string, StateChange> = new Map();
+  const changedState = <T extends object>(oldState: T, newState: T): string[] => {
+    const paths = <R extends object>(
+      state: R,
+      path: string,
+    ): { path: string; value: unknown }[] => {
+      let _paths = [];
 
-    for (const k in oldState) {
-      const currentPath = path ? `${path}.${k}` : k;
-
-      // Missing?
-      if (!(k in newState)) {
-        if (!changes.has(currentPath)) {
-          changes.set(currentPath, "deleted");
-        }
-      }
-
-      // Type changed?
-      if (typeof oldState[k] !== typeof newState[k]) {
-        if (!changes.has(currentPath)) {
-          changes.set(currentPath, "changed-type");
-        }
-      }
-
-      // Recursive object check
-      if (
-        typeof oldState[k] === "object" &&
-        typeof newState[k] === "object" &&
-        oldState[k] !== null &&
-        newState[k] !== null
-      ) {
-        changedState(oldState[k], newState[k], currentPath).forEach((v, k) => {
-          changes.set(k, v);
+      for (const key in state) {
+        const currentPath = `${path}.${key}`;
+        _paths.push({
+          path: currentPath,
+          value: state[key],
         });
-      }
 
-      // Value changed?
-      if (JSON.stringify(oldState[k]) !== JSON.stringify(newState[k])) {
-        if (!changes.has(currentPath)) {
-          changes.set(currentPath, "changed-value");
+        if (typeof state[key] === "object" && state[key] !== null) {
+          _paths.push(...paths(state[key], currentPath));
         }
       }
-    }
 
-    return changes;
+      return _paths;
+    };
+
+    const differ = <S extends object>(oldState: S, newState: S): string[] => {
+      const oldPaths = paths(oldState, "$");
+      const oldPathKeys = oldPaths.map((x) => x.path);
+      const newPaths = paths(newState, "$");
+      const newPathKeys = newPaths.map((x) => x.path);
+
+      // All new paths
+      const added = newPathKeys.filter((path) => !oldPathKeys.includes(path));
+
+      // All removed paths
+      const removed = oldPathKeys.filter((path) => !newPathKeys.includes(path));
+
+      // Paths that remained
+      const same = oldPathKeys.filter((path) => newPathKeys.includes(path));
+
+      // Paths that changed
+      const changed = same.filter((path) => {
+        const oldValue = oldPaths.find((x) => x.path === path)?.value;
+        const newValue = newPaths.find((x) => x.path === path)?.value;
+
+        return oldValue !== newValue;
+      });
+
+      return [...new Set([...added, ...removed, ...changed])];
+    };
+
+    return differ(oldState, newState);
   };
 
   /**
@@ -170,9 +173,9 @@ export default function ShapeX<T extends object>(initialState: T): ShapeXInstanc
         const changes = changedState(_state, response.state);
         _state = response.state;
 
-        changes.forEach((_, v) => {
-          dispatch(`\$${v}`);
-        });
+        for (let i = 0; i < changes.length; i++) {
+          dispatch(changes[i]);
+        }
       }
 
       // Dispatches events
