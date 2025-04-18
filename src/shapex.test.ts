@@ -1,284 +1,367 @@
-import { describe, test, expect, vi, beforeEach } from "vitest";
-import ShapeX from "./shapex.ts";
+import { assertArrayIncludes, assertEquals } from "@std/assert";
+import { assertSpyCall, spy } from "@std/testing/mock";
+import { describe, it } from "@std/testing/bdd";
+import ShapeX, { EventCallback } from "./shapex.ts";
 
-describe("EventX", () => {
-  describe("subscribe", () => {
-    test("subscribes to an event", () => {
-      const $ = ShapeX({ counter: 1 });
-      const id = $.subscribe("test-event", (state) => ({ state }));
+describe("subscribe", () => {
+  it("subscribes to an event", () => {
+    const $ = ShapeX({ counter: 1 });
+    const id = $.subscribe("test-event", (state) => ({ state }));
 
-      expect(id).toBe(1);
-      expect($.subscriptionCount("test-event")).toBe(1);
-    });
+    assertEquals(id, 1);
+    assertEquals($.subscriptionCount("test-event"), 1);
+  });
 
-    test("subscribes to an event once", () => {
-      const $ = ShapeX({ counter: 1 });
-      const id = $.subscribeOnce("test-event", (state) => ({ state }));
+  it("subscribes to an event once", () => {
+    const $ = ShapeX({ counter: 1 });
+    const id = $.subscribeOnce("test-event", (state) => ({ state }));
 
-      expect(id).toBe(1);
-      expect($.subscriptionCount("test-event")).toBe(1);
+    assertEquals(id, 1);
+    assertEquals($.subscriptionCount("test-event"), 1);
+  });
 
-      $.dispatch("test-event");
-      expect($.subscriptionCount("test-event")).toBe(0);
-    });
+  it("unsubscribes from an event", () => {
+    const $ = ShapeX({ counter: 1 });
 
-    test("unsubscribes from an event", () => {
-      const $ = ShapeX({ counter: 1 });
+    $.subscribe("test-event", (state) => ({ state }));
+    assertEquals($.subscriptionCount("test-event"), 1);
 
-      $.subscribe("test-event", (state) => ({ state }));
-      expect($.subscriptionCount("test-event")).toBe(1);
+    $.unsubscribe("test-event");
+    assertEquals($.subscriptionCount("test-event"), 0);
+  });
+});
 
-      $.unsubscribe("test-event");
-      expect($.subscriptionCount("test-event")).toBe(0);
+describe("dispatch", () => {
+  it("dispatches an event without arguments", () => {
+    type AppState = {
+      counter: number;
+    };
+
+    const $ = ShapeX<AppState>({ counter: 1 });
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
+
+    $.subscribe("test-event", spyCb);
+    $.dispatch("test-event");
+
+    assertSpyCall(spyCb, 0, {
+      args: [{ counter: 1 }],
     });
   });
 
-  describe("dispatch", () => {
-    test("dispatches an event without arguments", () => {
-      const $ = ShapeX({ counter: 1 });
-      const callback = vi.fn((state) => ({ state }));
+  it("dispatches an event with arguments", () => {
+    type AppState = {
+      counter: number;
+    };
 
-      $.subscribe("test-event", callback);
-      $.dispatch("test-event");
+    const $ = ShapeX<AppState>({ counter: 1 });
 
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith({ counter: 1 });
+    // deno-lint-ignore no-unused-vars
+    const testEventCb: EventCallback<AppState> = (state, arg1, arg2) => ({
+      state,
     });
 
-    test("dispatches an event with arguments", () => {
-      const $ = ShapeX({ counter: 1 });
-      const callback = vi.fn((state, arg1, arg2) => ({ state }));
+    const callback = spy(testEventCb);
 
-      $.subscribe("test-event", callback);
-      $.dispatch("test-event", "arg1-value", "arg2-value");
+    $.subscribe("test-event", callback);
+    $.dispatch("test-event", "arg1-value", "arg2-value");
 
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith({ counter: 1 }, "arg1-value", "arg2-value");
-    });
-
-    test("updates state when event handler returns new state", () => {
-      const $ = ShapeX({ counter: 1 });
-      const stateChangeSpy = vi.fn((state) => ({ state }));
-
-      $.subscribe("$.counter", stateChangeSpy);
-
-      $.subscribe("increment", (state) => ({
-        state: { ...state, counter: state.counter + 1 },
-      }));
-
-      $.dispatch("increment");
-
-      expect(stateChangeSpy).toHaveBeenCalledTimes(1);
-      expect(stateChangeSpy).toHaveBeenCalledWith({ counter: 2 });
-    });
-
-    test("dispatches nested events", () => {
-      const $ = ShapeX({ counter: 1 });
-      const nestedEventSpy = vi.fn((state) => ({ state }));
-
-      $.subscribe("nested-event", nestedEventSpy);
-
-      $.subscribe("parent-event", (state) => ({
-        state,
-        dispatch: { eventName: "nested-event" },
-      }));
-
-      $.dispatch("parent-event");
-
-      expect(nestedEventSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test("dispatches multiple nested events", () => {
-      const $ = ShapeX({ counter: 1 });
-      const nestedEvent1Spy = vi.fn((state) => ({ state }));
-      const nestedEvent2Spy = vi.fn((state) => ({ state }));
-
-      $.subscribe("nested-event-1", nestedEvent1Spy);
-
-      $.subscribe("nested-event-2", nestedEvent2Spy);
-
-      $.subscribe("parent-event", (state) => ({
-        state,
-        dispatch: [{ eventName: "nested-event-1" }, { eventName: "nested-event-2" }],
-      }));
-
-      $.dispatch("parent-event");
-
-      expect(nestedEvent1Spy).toHaveBeenCalledTimes(1);
-      expect(nestedEvent2Spy).toHaveBeenCalledTimes(1);
-    });
-
-    test("dispatches nested events with arguments", () => {
-      const $ = ShapeX({ counter: 1 });
-      const nestedEventSpy = vi.fn((state, arg) => ({ state }));
-
-      $.subscribe("nested-event", nestedEventSpy);
-
-      $.subscribe("parent-event", (state) => ({
-        state,
-        dispatch: { eventName: "nested-event", args: ["arg-value"] },
-      }));
-
-      $.dispatch("parent-event");
-
-      expect(nestedEventSpy).toHaveBeenCalledTimes(1);
-      expect(nestedEventSpy).toHaveBeenCalledWith({ counter: 1 }, "arg-value");
+    assertSpyCall(callback, 0, {
+      args: [
+        { counter: 1 },
+        "arg1-value",
+        "arg2-value",
+      ],
     });
   });
 
-  describe("state change detection", () => {
-    test("detects value changes in state", () => {
-      const $ = ShapeX({ counter: 1, nested: { value: "test" } });
-      const counterChangeSpy = vi.fn((state) => ({ state }));
+  it("updates state when event handler returns new state", () => {
+    type AppState = {
+      counter: number;
+    };
 
-      $.subscribe("$.counter", counterChangeSpy);
+    const $ = ShapeX<AppState>({ counter: 1 });
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
 
-      $.subscribe("change-counter", (state) => ({
-        state: { ...state, counter: 2 },
-      }));
+    $.subscribe("$.counter", spyCb);
 
-      $.dispatch("change-counter");
+    $.subscribe("increment", (state) => ({
+      state: { ...state, counter: state.counter + 1 },
+    }));
 
-      expect(counterChangeSpy).toHaveBeenCalledTimes(1);
-      expect(counterChangeSpy).toHaveBeenCalledWith({ counter: 2, nested: { value: "test" } });
+    $.dispatch("increment");
+
+    assertSpyCall(spyCb, 0, {
+      args: [
+        { counter: 2 },
+      ],
     });
+  });
 
-    test("detects nested value changes in state", () => {
-      const $ = ShapeX({ counter: 1, nested: { value: "test" } });
-      const nestedValueChangeSpy = vi.fn((state) => ({ state }));
+  it("dispatches nested events", () => {
+    type AppState = {
+      counter: number;
+    };
 
-      $.subscribe("$.nested.value", nestedValueChangeSpy);
+    const $ = ShapeX({ counter: 1 });
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
 
-      $.subscribe("change-nested-value", (state) => ({
+    $.subscribe("nested-event", spyCb);
+
+    $.subscribe("parent-event", (state) => ({
+      state,
+      dispatch: { eventName: "nested-event" },
+    }));
+
+    $.dispatch("parent-event");
+
+    assertSpyCall(spyCb, 0);
+  });
+
+  it("dispatches multiple nested events", () => {
+    type AppState = {
+      counter: number;
+    };
+
+    const $ = ShapeX({ counter: 1 });
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
+    const spyCb2 = spy(cb);
+
+    $.subscribe("nested-event-1", spyCb);
+
+    $.subscribe("nested-event-2", spyCb2);
+
+    $.subscribe("parent-event", (state) => ({
+      state,
+      dispatch: [{ eventName: "nested-event-1" }, {
+        eventName: "nested-event-2",
+      }],
+    }));
+
+    $.dispatch("parent-event");
+
+    assertSpyCall(spyCb, 0);
+    assertSpyCall(spyCb2, 0);
+  });
+
+  it("dispatches nested events with arguments", () => {
+    type AppState = {
+      counter: number;
+    };
+
+    const $ = ShapeX<AppState>({ counter: 1 });
+    // deno-lint-ignore no-unused-vars
+    const cb: EventCallback<AppState> = (state, arg) => ({ state });
+    const spyCb = spy(cb);
+
+    $.subscribe("nested-event", spyCb);
+
+    $.subscribe("parent-event", (state) => ({
+      state,
+      dispatch: { eventName: "nested-event", args: ["arg-value"] },
+    }));
+
+    $.dispatch("parent-event");
+
+    assertSpyCall(spyCb, 0, {
+      args: [{ counter: 1 }, "arg-value"],
+    });
+  });
+});
+
+describe("state change detection", () => {
+  it("detects value changes in state", () => {
+    type AppState = {
+      counter: number;
+      nested: {
+        value: string;
+      };
+    };
+
+    const $ = ShapeX<AppState>({ counter: 1, nested: { value: "test" } });
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
+
+    $.subscribe("$.counter", spyCb);
+
+    $.subscribe("change-counter", (state) => ({
+      state: { ...state, counter: 2 },
+    }));
+
+    $.dispatch("change-counter");
+
+    assertSpyCall(spyCb, 0, {
+      args: [{ counter: 2, nested: { value: "test" } }],
+    });
+  });
+
+  it("detects nested value changes in state", () => {
+    type AppState = {
+      counter: number;
+      nested: {
+        value: string;
+      };
+    };
+
+    const $ = ShapeX<AppState>({ counter: 1, nested: { value: "test" } });
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
+
+    $.subscribe("$.nested.value", spyCb);
+
+    $.subscribe("change-nested-value", (state) => ({
+      state: {
+        ...state,
+        nested: { ...state.nested, value: "new value" },
+      },
+    }));
+
+    $.subscribe("change-nested-value-again", (state) => ({
+      state: {
+        ...state,
+        nested: { ...state.nested, value: "new value again" },
+      },
+    }));
+
+    $.dispatch("change-nested-value");
+    $.dispatch("change-nsted-value-again");
+
+    assertSpyCall(spyCb, 0, {
+      args: [{ counter: 1, nested: { value: "new value" } }],
+    });
+  });
+
+  it("detects addition in state", () => {
+    type AppState = {
+      view?: string;
+    };
+
+    const $ = ShapeX<AppState>({});
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
+
+    $.subscribe("$.view", spyCb);
+
+    $.subscribe("set-view", (state) => {
+      return {
         state: {
           ...state,
-          nested: { ...state.nested, value: "new value" },
+          view: "test",
         },
-      }));
-
-      $.subscribe("change-nested-value-again", (state) => ({
-        state: {
-          ...state,
-          nested: { ...state.nested, value: "new value again" },
-        },
-      }));
-
-      $.dispatch("change-nested-value");
-      $.dispatch("change-nsted-value-again");
-
-      expect(nestedValueChangeSpy).toHaveBeenCalledTimes(1);
-      expect(nestedValueChangeSpy).toHaveBeenCalledWith({
-        counter: 1,
-        nested: { value: "new value" },
-      });
+      };
     });
 
-    test("detects addition in state", () => {
-      const $ = ShapeX({} as { view?: string });
-      const additionChangeSpy = vi.fn((state) => ({ state }));
+    $.dispatch("set-view");
 
-      $.subscribe("$.view", additionChangeSpy);
-
-      $.subscribe("set-view", (state) => {
-        return {
-          state: {
-            ...state,
-            view: "test",
-          },
-        };
-      });
-
-      $.dispatch("set-view");
-
-      expect(additionChangeSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test("detects nested addition in state", () => {
-      const $ = ShapeX({} as { nested?: { value?: string } });
-      const additionChangeSpy = vi.fn((state) => ({ state }));
-      const additionChangeSpy2 = vi.fn((state) => ({ state }));
-
-      $.subscribe("$.nested", additionChangeSpy);
-      $.subscribe("$.nested.value", additionChangeSpy2);
-
-      $.subscribe("set-nested-value", (state) => {
-        return {
-          state: {
-            ...state,
-            nested: { value: "test" },
-          },
-        };
-      });
-
-      $.subscribe("set-nested-value-again", (state) => {
-        return {
-          state: {
-            ...state,
-            nested: { value: "test-again" },
-          },
-        };
-      });
-
-      $.dispatch("set-nested-value");
-      $.dispatch("set-nested-value-again");
-
-      expect(additionChangeSpy).toHaveBeenCalledTimes(2);
-      expect(additionChangeSpy2).toHaveBeenCalledTimes(2);
-    });
-
-    test("detects deleted properties in state", () => {
-      const $ = ShapeX({ counter: 1, toDelete: "value" } as { counter: number; toDelete?: string });
-      const deleteChangeSpy = vi.fn((state) => ({ state }));
-
-      $.subscribe("$.toDelete", deleteChangeSpy);
-      $.subscribe("delete-property", (state) => {
-        const newState = { counter: state.counter };
-        return { state: newState };
-      });
-
-      $.dispatch("delete-property");
-
-      expect(deleteChangeSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test("detects type changes in state", () => {
-      const $ = ShapeX({ counter: 1 } as { counter: string | number });
-      const counterChangeSpy = vi.fn((state) => ({ state }));
-
-      $.subscribe("$.counter", counterChangeSpy);
-      $.subscribe("change-counter-type", (state) => ({
-        state: { ...state, counter: "string now" },
-      }));
-
-      $.dispatch("change-counter-type");
-
-      expect(counterChangeSpy).toHaveBeenCalledTimes(1);
-    });
+    assertSpyCall(spyCb, 0);
   });
 
-  describe("utility methods", () => {
-    test("returns all subscription names", () => {
-      const $ = ShapeX({ counter: 1 });
+  it("detects nested addition in state", () => {
+    type AppState = {
+      nested?: {
+        value?: string;
+      };
+    };
 
-      $.subscribe("event1", (state) => ({ state }));
-      $.subscribe("event2", (state) => ({ state }));
+    const $ = ShapeX<AppState>({});
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
+    const spyCb2 = spy(cb);
 
-      const subs = $.subscriptions();
+    $.subscribe("$.nested", spyCb);
+    $.subscribe("$.nested.value", spyCb2);
 
-      expect(subs).toContain("event1");
-      expect(subs).toContain("event2");
-      expect(subs.length).toBe(2);
+    $.subscribe("set-nested-value", (state) => {
+      return {
+        state: {
+          ...state,
+          nested: { value: "test" },
+        },
+      };
     });
 
-    test("returns subscription count for specific event", () => {
-      const $ = ShapeX({ counter: 1 });
-
-      $.subscribe("event1", (state) => ({ state }));
-      $.subscribe("event1", (state) => ({ state }));
-      $.subscribe("event2", (state) => ({ state }));
-
-      expect($.subscriptionCount("event1")).toBe(2);
-      expect($.subscriptionCount("event2")).toBe(1);
+    $.subscribe("set-nested-value-again", (state) => {
+      return {
+        state: {
+          ...state,
+          nested: { value: "test-again" },
+        },
+      };
     });
+
+    $.dispatch("set-nested-value");
+    $.dispatch("set-nested-value-again");
+
+    assertSpyCall(spyCb, 1);
+    assertSpyCall(spyCb2, 1);
+  });
+
+  it("detects deleted properties in state", () => {
+    type AppState = {
+      counter: number;
+      toDelete?: string;
+    };
+
+    const $ = ShapeX<AppState>({ counter: 1, toDelete: "value" });
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
+
+    $.subscribe("$.toDelete", spyCb);
+    $.subscribe("delete-property", (state) => {
+      const newState = { counter: state.counter };
+      return { state: newState };
+    });
+
+    $.dispatch("delete-property");
+
+    assertSpyCall(spyCb, 0);
+  });
+
+  it("detects type changes in state", () => {
+    type AppState = {
+      counter: string | number;
+    };
+
+    const $ = ShapeX<AppState>({ counter: 1 });
+    const cb: EventCallback<AppState> = (state) => ({ state });
+    const spyCb = spy(cb);
+
+    $.subscribe("$.counter", spyCb);
+    $.subscribe("change-counter-type", (state) => ({
+      state: { ...state, counter: "string now" },
+    }));
+
+    $.dispatch("change-counter-type");
+
+    assertSpyCall(spyCb, 0);
+  });
+});
+
+describe("utility methods", () => {
+  it("returns all subscription names", () => {
+    const $ = ShapeX({ counter: 1 });
+
+    $.subscribe("event1", (state) => ({ state }));
+    $.subscribe("event2", (state) => ({ state }));
+
+    const subs = $.subscriptions();
+
+    assertArrayIncludes(subs, ["event1"]);
+    assertArrayIncludes(subs, ["event2"]);
+    assertEquals(subs.length, 2);
+  });
+
+  it("returns subscription count for specific event", () => {
+    const $ = ShapeX({ counter: 1 });
+
+    $.subscribe("event1", (state) => ({ state }));
+    $.subscribe("event1", (state) => ({ state }));
+    $.subscribe("event2", (state) => ({ state }));
+
+    assertEquals($.subscriptionCount("event1"), 2);
+    assertEquals($.subscriptionCount("event2"), 1);
   });
 });

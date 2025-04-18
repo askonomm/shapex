@@ -1,9 +1,9 @@
-type SubscriptionResponseDispatch = {
+export type SubscriptionResponseDispatch = {
   eventName: string;
   args?: unknown[];
 };
 
-type SubscriptionResponse<T> = {
+export type SubscriptionResponse<T> = {
   state?: T;
   dispatch?: SubscriptionResponseDispatch | SubscriptionResponseDispatch[];
 };
@@ -12,7 +12,7 @@ const isSubscriptionResponseList = (
   dispatch: SubscriptionResponseDispatch | SubscriptionResponseDispatch[],
 ): dispatch is SubscriptionResponseDispatch[] => Array.isArray(dispatch);
 
-type EventCallback<T> = (state: T, ...args: any[]) => SubscriptionResponse<T>;
+export type EventCallback<T> = (state: T, ...args: unknown[]) => SubscriptionResponse<T>;
 
 type Subscription<T> = {
   listener: string;
@@ -20,13 +20,13 @@ type Subscription<T> = {
   once: boolean;
 };
 
-type ShapeXInstance<T> = {
+export type ShapeXInstance<T> = {
   subscribe: (listener: string, callback: EventCallback<T>) => number;
   subscribeOnce: (listener: string, callback: EventCallback<T>) => number;
   unsubscribe: (listener: string) => void;
   subscriptionCount: (eventName: string) => number;
   subscriptions: () => string[];
-  dispatch: (eventName: string, ...args: any[]) => void;
+  dispatch: (eventName: string, ...args: unknown[]) => void;
 };
 
 /**
@@ -100,7 +100,7 @@ export default function ShapeX<T extends object>(initialState: T): ShapeXInstanc
       state: R,
       path: string,
     ): { path: string; value: unknown }[] => {
-      let _paths = [];
+      const _paths = [] as { path: string; value: unknown }[];
 
       for (const key in state) {
         const currentPath = `${path}.${key}`;
@@ -159,7 +159,7 @@ export default function ShapeX<T extends object>(initialState: T): ShapeXInstanc
     }
 
     const scopedSubsriptions = _subscriptions.get(eventName) ?? [];
-    const remainingSubscriptions = [];
+    const remainingSubscriptions = [] as Subscription<T>[];
     let callbackCount = 0;
 
     for (const subscription of scopedSubsriptions) {
