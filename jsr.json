@@ -1,0 +1,6 @@
+{
+  "name": "@shapex/shapex",
+  "version": "1.0.10",
+  "license": "MIT",
+  "exports": "./mod.ts"
+}
