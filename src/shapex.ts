@@ -40,11 +40,33 @@ type Subscription<T> = {
  * An instance of the ShapeX object.
  */
 export type ShapeXInstance<T> = {
+  /**
+   * Subcribe to an event.
+   */
   subscribe: (listener: string, callback: EventCallback<T>) => number;
+  /**
+   * Subscribe to an event once.
+   */
   subscribeOnce: (listener: string, callback: EventCallback<T>) => number;
+
+  /**
+   * Unsubscribe from an event.
+   */
   unsubscribe: (listener: string) => void;
+
+  /**
+   * Get the number of subscriptions for an event.
+   */
   subscriptionCount: (eventName: string) => number;
+
+  /**
+   * Get the subscriptions for an event.
+   */
   subscriptions: () => string[];
+
+  /**
+   * Dispatch an event.
+   */
   dispatch: (eventName: string, ...args: unknown[]) => void;
 };
 
