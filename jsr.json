@@ -1,6 +1,0 @@
-{
-  "name": "@shapex/shapex",
-  "version": "1.0.12",
-  "license": "MIT",
-  "exports": "./src/shapex.ts"
-}
