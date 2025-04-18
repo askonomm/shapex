@@ -68,6 +68,11 @@ export type ShapeXInstance<T> = {
    * Dispatch an event.
    */
   dispatch: (eventName: string, ...args: unknown[]) => void;
+
+  /**
+   * Get the current state.
+   */
+  state: () => T;
 };
 
 /**
@@ -272,6 +277,15 @@ export default function ShapeX<T extends object>(
     return Array.from(_subscriptions.keys());
   };
 
+  /**
+   * Returns the current state.
+   *
+   * @returns {T} The current state.
+   */
+  const state = (): T => {
+    return _state;
+  }
+
   return {
     subscribe,
     subscribeOnce,
@@ -279,5 +293,6 @@ export default function ShapeX<T extends object>(
     subscriptionCount,
     subscriptions,
     dispatch,
+    state,
   };
 }

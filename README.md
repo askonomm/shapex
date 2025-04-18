@@ -222,3 +222,11 @@ If you want to get all subscriptions, you can use the `subscriptions` method. Th
 ```typescript
 app.subscriptions();
 ```
+
+#### Get current app state
+
+If you want to get the current state of the app, you can use the `state` method. This method returns the current state of the app.
+
+```typescript
+app.state();
+```

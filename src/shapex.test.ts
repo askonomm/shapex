@@ -1,7 +1,7 @@
 import { assertArrayIncludes, assertEquals } from "@std/assert";
 import { assertSpyCall, spy } from "@std/testing/mock";
 import { describe, it } from "@std/testing/bdd";
-import ShapeX, { EventCallback } from "./shapex.ts";
+import ShapeX, { type EventCallback } from "./shapex.ts";
 
 describe("subscribe", () => {
   it("subscribes to an event", () => {
@@ -363,5 +363,20 @@ describe("utility methods", () => {
 
     assertEquals($.subscriptionCount("event1"), 2);
     assertEquals($.subscriptionCount("event2"), 1);
+  });
+
+  it("returns updated state", () => {
+    const $ = ShapeX({ counter: 1 });
+
+    $.subscribe(
+      "event1",
+      (state) => ({ state: { counter: state.counter + 1 } }),
+    );
+
+    $.dispatch("event1");
+
+    assertEquals($.state(), {
+      counter: 2,
+    });
   });
 });
