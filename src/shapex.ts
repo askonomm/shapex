@@ -20,8 +20,6 @@ type Subscription<T> = {
   once: boolean;
 };
 
-type StateChange = "added" | "deleted" | "changed-type" | "changed-value";
-
 type ShapeXInstance<T> = {
   subscribe: (listener: string, callback: EventCallback<T>) => number;
   subscribeOnce: (listener: string, callback: EventCallback<T>) => number;
