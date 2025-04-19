@@ -56,8 +56,13 @@ describe("dispatch", () => {
 
     const $ = ShapeX<AppState>({ counter: 1 });
 
-    // deno-lint-ignore no-unused-vars
-    const testEventCb: EventCallback<AppState> = (state, arg1, arg2) => ({
+    const testEventCb: EventCallback<AppState, [string, string]> = (
+      state,
+      // deno-lint-ignore no-unused-vars
+      arg1,
+      // deno-lint-ignore no-unused-vars
+      arg2
+    ) => ({
       state,
     });
 
@@ -67,11 +72,7 @@ describe("dispatch", () => {
     $.dispatch("test-event", "arg1-value", "arg2-value");
 
     assertSpyCall(callback, 0, {
-      args: [
-        { counter: 1 },
-        "arg1-value",
-        "arg2-value",
-      ],
+      args: [{ counter: 1 }, "arg1-value", "arg2-value"],
     });
   });
 
@@ -93,9 +94,7 @@ describe("dispatch", () => {
     $.dispatch("increment");
 
     assertSpyCall(spyCb, 0, {
-      args: [
-        { counter: 2 },
-      ],
+      args: [{ counter: 2 }],
     });
   });
 
@@ -136,9 +135,12 @@ describe("dispatch", () => {
 
     $.subscribe("parent-event", (state) => ({
       state,
-      dispatch: [{ eventName: "nested-event-1" }, {
-        eventName: "nested-event-2",
-      }],
+      dispatch: [
+        { eventName: "nested-event-1" },
+        {
+          eventName: "nested-event-2",
+        },
+      ],
     }));
 
     $.dispatch("parent-event");
@@ -154,7 +156,7 @@ describe("dispatch", () => {
 
     const $ = ShapeX<AppState>({ counter: 1 });
     // deno-lint-ignore no-unused-vars
-    const cb: EventCallback<AppState> = (state, arg) => ({ state });
+    const cb: EventCallback<AppState, [string]> = (state, arg) => ({ state });
     const spyCb = spy(cb);
 
     $.subscribe("nested-event", spyCb);
@@ -368,10 +370,9 @@ describe("utility methods", () => {
   it("returns updated state", () => {
     const $ = ShapeX({ counter: 1 });
 
-    $.subscribe(
-      "event1",
-      (state) => ({ state: { counter: state.counter + 1 } }),
-    );
+    $.subscribe("event1", (state) => ({
+      state: { counter: state.counter + 1 },
+    }));
 
     $.dispatch("event1");
 

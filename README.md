@@ -25,7 +25,7 @@ app.subscribe("$.counter", (state) => {
   };
 });
 
-app.subscribe("request", (state) => {
+app.subscribe<[]>("request", (state) => {
   return {
     state: {
       ...state,
@@ -95,11 +95,14 @@ Subscriptions listen to events or changes to state. Each subscription must retur
 You can listen to events like so:
 
 ```typescript
-app.subscribe("some-event-name", (state, arg1, arg2, arg3) => {
-  return {
-    state,
-  };
-});
+app.subscribe(
+  "some-event-name",
+  (state, arg1: string, arg2: string, arg3: string) => {
+    return {
+      state,
+    };
+  }
+);
 ```
 
 Each subscription has a callback function which gets passed to it the app state and whatever data was passed
