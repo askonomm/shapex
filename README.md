@@ -25,7 +25,7 @@ app.subscribe("$.counter", (state) => {
   };
 });
 
-app.subscribe<[]>("request", (state) => {
+app.subscribe("request", (state) => {
   return {
     state: {
       ...state,
