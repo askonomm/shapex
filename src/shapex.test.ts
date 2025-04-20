@@ -56,12 +56,10 @@ describe("dispatch", () => {
 
     const $ = ShapeX<AppState>({ counter: 1 });
 
-    const testEventCb: EventCallback<AppState, [string, string]> = (
+    const testEventCb: EventCallback<AppState, string> = (
       state,
       // deno-lint-ignore no-unused-vars
-      arg1,
-      // deno-lint-ignore no-unused-vars
-      arg2
+      data
     ) => ({
       state,
     });
@@ -69,10 +67,10 @@ describe("dispatch", () => {
     const callback = spy(testEventCb);
 
     $.subscribe("test-event", callback);
-    $.dispatch("test-event", "arg1-value", "arg2-value");
+    $.dispatch("test-event", "arg1-value");
 
     assertSpyCall(callback, 0, {
-      args: [{ counter: 1 }, "arg1-value", "arg2-value"],
+      args: [{ counter: 1 }, "arg1-value"],
     });
   });
 
@@ -111,7 +109,7 @@ describe("dispatch", () => {
 
     $.subscribe("parent-event", (state) => ({
       state,
-      dispatch: { eventName: "nested-event" },
+      dispatch: { to: "nested-event" },
     }));
 
     $.dispatch("parent-event");
@@ -136,9 +134,9 @@ describe("dispatch", () => {
     $.subscribe("parent-event", (state) => ({
       state,
       dispatch: [
-        { eventName: "nested-event-1" },
+        { to: "nested-event-1" },
         {
-          eventName: "nested-event-2",
+          to: "nested-event-2",
         },
       ],
     }));
@@ -156,14 +154,14 @@ describe("dispatch", () => {
 
     const $ = ShapeX<AppState>({ counter: 1 });
     // deno-lint-ignore no-unused-vars
-    const cb: EventCallback<AppState, [string]> = (state, arg) => ({ state });
+    const cb: EventCallback<AppState, string> = (state, arg) => ({ state });
     const spyCb = spy(cb);
 
     $.subscribe("nested-event", spyCb);
 
     $.subscribe("parent-event", (state) => ({
       state,
-      dispatch: { eventName: "nested-event", args: ["arg-value"] },
+      dispatch: { to: "nested-event", withData: "arg-value" },
     }));
 
     $.dispatch("parent-event");

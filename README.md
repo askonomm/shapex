@@ -73,7 +73,9 @@ app.dispatch("some-event-name");
 And, if there's a subscription for that event name, that subscription will then fire. The above example is a data-less event, but you can also dispatch events with data, like so:
 
 ```typescript
-app.dispatch("some-event-name", arg1, arg2, arg3);
+app.dispatch("some-event-name", {
+  hello: "world",
+});
 ```
 
 ### Subscriptions
@@ -82,11 +84,26 @@ Subscriptions listen to events or changes to state. Each subscription must retur
 
 ```typescript
 {
-  state: T, // state is required
+  state: T, // optional
   dispatch: {
-    eventName: "event-to-dispatch",
-    args: [arg1, arg2] // args are optional
-  } // dispatch is optional
+    to: "event-to-dispatch",
+    withData: {} // optional
+  } // optional
+}
+```
+
+You can also dispatch multiple events by passing an array of objects, like so:
+
+```typescript
+{
+  state: T,
+  dispatch: [{
+    to: "event-to-dispatch",
+    withData: {}
+  },{
+    to: "another-event-to-dispatch",
+    withData: {}
+  }]
 }
 ```
 
@@ -95,14 +112,11 @@ Subscriptions listen to events or changes to state. Each subscription must retur
 You can listen to events like so:
 
 ```typescript
-app.subscribe(
-  "some-event-name",
-  (state, arg1: string, arg2: string, arg3: string) => {
-    return {
-      state,
-    };
-  }
-);
+app.subscribe("some-event-name", (state, data: <{hello: string}>) => {
+  return {
+    state,
+  };
+});
 ```
 
 Each subscription has a callback function which gets passed to it the app state and whatever data was passed
@@ -175,7 +189,7 @@ app.subscribe("some-event-name", (state) => {
   return {
     state,
     dispatch: {
-      event: "counter++",
+      to: "counter++",
     },
   };
 });
@@ -197,8 +211,8 @@ app.subscribe("some-event-name", (state) => {
   return {
     state,
     dispatch: {
-      event: "counter-increase",
-      args: [5],
+      to: "counter-increase",
+      withData: 5,
     },
   };
 });
