@@ -25,7 +25,7 @@ app.subscribe("$.counter", (state) => {
   };
 });
 
-app.subscribe("request", (state) => {
+app.subscribe<[]>("request", (state) => {
   return {
     state: {
       ...state,
@@ -40,7 +40,7 @@ app.dispatch("request");
 
 ## Installation
 
-[ShapeX is available via JSR](https://jsr.io/@shapex/shapex), so check that out for the installation instructions for any given runtime.
+ShapeX is available via [JSR](https://jsr.io/@shapex/shapex) for Node, Deno, Bun, Cloudflare Workers and browsers.
 
 ## Documentation
 
