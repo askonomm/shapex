@@ -4,7 +4,7 @@
  */
 export type SubscriptionResponseDispatch<W extends unknown = undefined> = {
   to: string;
-  withData?: W;
+  with?: W;
 };
 
 /**
@@ -258,15 +258,15 @@ export default function ShapeX<T extends object>(
       if (response.dispatch) {
         if (isSubscriptionResponseList(response.dispatch)) {
           for (const dispatchee of response.dispatch) {
-            if (dispatchee.withData) {
-              dispatch(dispatchee.to, dispatchee.withData);
+            if (dispatchee.with) {
+              dispatch(dispatchee.to, dispatchee.with);
             } else {
               dispatch(dispatchee.to);
             }
           }
         } else {
-          if (response.dispatch.withData) {
-            dispatch(response.dispatch.to, response.dispatch.withData);
+          if (response.dispatch.with) {
+            dispatch(response.dispatch.to, response.dispatch.with);
           } else {
             dispatch(response.dispatch.to);
           }

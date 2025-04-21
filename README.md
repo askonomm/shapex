@@ -87,7 +87,7 @@ Subscriptions listen to events or changes to state. Each subscription must retur
   state: T, // optional
   dispatch: {
     to: "event-to-dispatch",
-    withData: {} // optional
+    with: {} // optional
   } // optional
 }
 ```
@@ -99,10 +99,10 @@ You can also dispatch multiple events by passing an array of objects, like so:
   state: T,
   dispatch: [{
     to: "event-to-dispatch",
-    withData: {}
+    with: {}
   },{
     to: "another-event-to-dispatch",
-    withData: {}
+    with: {}
   }]
 }
 ```
@@ -212,7 +212,7 @@ app.subscribe("some-event-name", (state) => {
     state,
     dispatch: {
       to: "counter-increase",
-      withData: 5,
+      with: 5,
     },
   };
 });

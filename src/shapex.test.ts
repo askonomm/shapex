@@ -161,7 +161,7 @@ describe("dispatch", () => {
 
     $.subscribe("parent-event", (state) => ({
       state,
-      dispatch: { to: "nested-event", withData: "arg-value" },
+      dispatch: { to: "nested-event", with: "arg-value" },
     }));
 
     $.dispatch("parent-event");
