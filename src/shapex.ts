@@ -12,11 +12,11 @@ export type SubscriptionResponseDispatch<W extends unknown = undefined> = {
  * if you want to update state, and/or optionally also any events you
  * might want to dispatch.
  */
-export type SubscriptionResponse<T, W extends unknown = undefined> = {
+export type SubscriptionResponse<T, W extends unknown = undefined, D extends unknown = W> = {
   state?: T;
   dispatch?:
-    | SubscriptionResponseDispatch<W>
-    | SubscriptionResponseDispatch<W>[];
+    | SubscriptionResponseDispatch<D>
+    | SubscriptionResponseDispatch<D>[];
 };
 
 const isSubscriptionResponseList = <W extends unknown = undefined>(
@@ -27,14 +27,14 @@ const isSubscriptionResponseList = <W extends unknown = undefined>(
  * A callback passed to subcriptions, called when the event
  * that the subscription is listening to is called.
  */
-export type EventCallback<T, W extends unknown = undefined> = (
+export type EventCallback<T, W extends unknown = undefined, D extends unknown = W> = (
   state: T,
   data?: W
-) => SubscriptionResponse<T, W>;
+) => SubscriptionResponse<T, W, D>;
 
-type Subscription<T, W extends unknown = undefined> = {
+type Subscription<T, W extends unknown = undefined, D extends unknown = W> = {
   listener: string;
-  callback: EventCallback<T, W>;
+  callback: EventCallback<T, W, D>;
   once: boolean;
 };
 
@@ -45,16 +45,16 @@ export type ShapeXInstance<T> = {
   /**
    * Subcribe to an event.
    */
-  subscribe: <W extends unknown = undefined>(
+  subscribe: <W extends unknown = undefined, D extends unknown = W>(
     listener: string,
-    callback: EventCallback<T, W>
+    callback: EventCallback<T, W, D>
   ) => number;
   /**
    * Subscribe to an event once.
    */
-  subscribeOnce: <W extends unknown = undefined>(
+  subscribeOnce: <W extends unknown = undefined, D extends unknown = W>(
     listener: string,
-    callback: EventCallback<T, W>
+    callback: EventCallback<T, W, D>
   ) => number;
 
   /**
@@ -95,7 +95,7 @@ export default function ShapeX<T extends object>(
   let _state = initialState;
   const _subscriptions: Map<
     string,
-    Array<Subscription<T, unknown>>
+    Array<Subscription<T, unknown, unknown>>
   > = new Map();
   let subscriptionId = 0;
 
@@ -103,12 +103,12 @@ export default function ShapeX<T extends object>(
    * Subcribe to an event.
    *
    * @param {string} listener
-   * @param {EventCallback<T, W>} callback
+   * @param {EventCallback<T, W, D>} callback
    * @returns
    */
-  const subscribe = <W extends unknown = undefined>(
+  const subscribe = <W extends unknown = undefined, D extends unknown = W>(
     listener: string,
-    callback: EventCallback<T, W>
+    callback: EventCallback<T, W, D>
   ): number => {
     if (!_subscriptions.has(listener)) {
       _subscriptions.set(listener, []);
@@ -118,7 +118,7 @@ export default function ShapeX<T extends object>(
     if (subscriptions) {
       subscriptions.push({
         listener,
-        callback: callback as unknown as EventCallback<T, unknown>,
+        callback: callback as unknown as EventCallback<T, unknown, unknown>,
         once: false,
       });
     }
@@ -130,12 +130,12 @@ export default function ShapeX<T extends object>(
    * Subcribe to an event, once.
    *
    * @param {string} listener
-   * @param {EventCallback<T>} callback
+   * @param {EventCallback<T, W, D>} callback
    * @returns
    */
-  const subscribeOnce = <W extends unknown = undefined>(
+  const subscribeOnce = <W extends unknown = undefined, D extends unknown = W>(
     listener: string,
-    callback: EventCallback<T, W>
+    callback: EventCallback<T, W, D>
   ): number => {
     if (!_subscriptions.has(listener)) {
       _subscriptions.set(listener, []);
@@ -145,7 +145,7 @@ export default function ShapeX<T extends object>(
     if (subscriptions) {
       subscriptions.push({
         listener,
-        callback: callback as unknown as EventCallback<T, unknown>,
+        callback: callback as unknown as EventCallback<T, unknown, unknown>,
         once: true,
       });
     }
@@ -236,11 +236,11 @@ export default function ShapeX<T extends object>(
     }
 
     const scopedSubsriptions = _subscriptions.get(to) ?? [];
-    const remainingSubscriptions = [] as Array<Subscription<T, unknown>>;
+    const remainingSubscriptions = [] as Array<Subscription<T, unknown, unknown>>;
     let callbackCount = 0;
 
     for (const subscription of scopedSubsriptions) {
-      const callback = subscription.callback as unknown as EventCallback<T, W>;
+      const callback = subscription.callback as unknown as EventCallback<T, W, unknown>;
       const response = withData ? callback(_state, withData) : callback(_state);
 
       // Updates state, and checks for state changes, and if any changes present,

@@ -170,6 +170,60 @@ describe("dispatch", () => {
       args: [{ counter: 1 }, "arg-value"],
     });
   });
+
+  it("supports different data types for event callback and dispatch", () => {
+    type AppState = {
+      counter: number;
+    };
+
+    type ParentEventData = {
+      id: number;
+    };
+
+    type ChildEventData = {
+      message: string;
+    };
+
+    const $ = ShapeX<AppState>({ counter: 1 });
+
+    // This callback receives ChildEventData
+    const childEventCb: EventCallback<AppState, ChildEventData> = (
+      state,
+      data
+    ) => ({
+      state: data ? { ...state, counter: data.message.length } : state,
+    });
+
+    const spyChildCb = spy(childEventCb);
+
+    $.subscribe("child-event", spyChildCb);
+
+    // This callback receives ParentEventData but dispatches ChildEventData
+    const parentEventCb: EventCallback<
+      AppState,
+      ParentEventData,
+      ChildEventData
+    > = (state, data) => ({
+      state,
+      dispatch: {
+        to: "child-event",
+        with: { message: `ID ${data?.id ?? 0} processed` },
+      },
+    });
+
+    $.subscribe("parent-event", parentEventCb);
+
+    // Dispatch with parent event data
+    $.dispatch("parent-event", { id: 123 });
+
+    // Child event should be called with the child event data
+    assertSpyCall(spyChildCb, 0, {
+      args: [{ counter: 1 }, { message: "ID 123 processed" }],
+    });
+
+    // State should be updated based on the message length
+    assertEquals($.state().counter, 16);
+  });
 });
 
 describe("state change detection", () => {
