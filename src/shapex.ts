@@ -12,7 +12,11 @@ export type SubscriptionResponseDispatch<W extends unknown = undefined> = {
  * if you want to update state, and/or optionally also any events you
  * might want to dispatch.
  */
-export type SubscriptionResponse<T, W extends unknown = undefined, D extends unknown = W> = {
+export type SubscriptionResponse<
+  T,
+  W extends unknown = undefined,
+  D extends unknown = W
+> = {
   state?: T;
   dispatch?:
     | SubscriptionResponseDispatch<D>
@@ -27,10 +31,11 @@ const isSubscriptionResponseList = <W extends unknown = undefined>(
  * A callback passed to subcriptions, called when the event
  * that the subscription is listening to is called.
  */
-export type EventCallback<T, W extends unknown = undefined, D extends unknown = W> = (
-  state: T,
-  data?: W
-) => SubscriptionResponse<T, W, D>;
+export type EventCallback<
+  T,
+  W extends unknown = undefined,
+  D extends unknown = W
+> = (state: T, data?: W) => SubscriptionResponse<T, W, D>;
 
 type Subscription<T, W extends unknown = undefined, D extends unknown = W> = {
   listener: string;
@@ -89,9 +94,7 @@ export type ShapeXInstance<T> = {
  * @param {T extends object} initialState The initial application state.
  * @returns {ShapeXInstance<T>} The ShapeX object.
  */
-export default function ShapeX<T extends object>(
-  initialState: T
-): ShapeXInstance<T> {
+export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
   let _state = initialState;
   const _subscriptions: Map<
     string,
@@ -236,11 +239,17 @@ export default function ShapeX<T extends object>(
     }
 
     const scopedSubsriptions = _subscriptions.get(to) ?? [];
-    const remainingSubscriptions = [] as Array<Subscription<T, unknown, unknown>>;
+    const remainingSubscriptions = [] as Array<
+      Subscription<T, unknown, unknown>
+    >;
     let callbackCount = 0;
 
     for (const subscription of scopedSubsriptions) {
-      const callback = subscription.callback as unknown as EventCallback<T, W, unknown>;
+      const callback = subscription.callback as unknown as EventCallback<
+        T,
+        W,
+        unknown
+      >;
       const response = withData ? callback(_state, withData) : callback(_state);
 
       // Updates state, and checks for state changes, and if any changes present,
