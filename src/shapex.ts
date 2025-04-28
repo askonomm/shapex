@@ -254,7 +254,7 @@ export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
 
       // Updates state, and checks for state changes, and if any changes present,
       // fires a dispatch for all the state listeners (if there are any).
-      if (typeof response.state !== "undefined") {
+      if (response?.state !== undefined) {
         const changes = changedState(_state, response.state);
         _state = response.state;
 
@@ -264,17 +264,17 @@ export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
       }
 
       // Dispatches events
-      if (response.dispatch) {
+      if (response?.dispatch !== undefined) {
         if (isSubscriptionResponseList(response.dispatch)) {
           for (const dispatchee of response.dispatch) {
-            if (dispatchee.with) {
+            if (dispatchee?.with) {
               dispatch(dispatchee.to, dispatchee.with);
             } else {
               dispatch(dispatchee.to);
             }
           }
         } else {
-          if (response.dispatch.with) {
+          if (response.dispatch?.with) {
             dispatch(response.dispatch.to, response.dispatch.with);
           } else {
             dispatch(response.dispatch.to);
