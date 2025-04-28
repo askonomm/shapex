@@ -35,7 +35,7 @@ export type EventCallback<
   T,
   W extends unknown = undefined,
   D extends unknown = W
-> = (state: T, data?: W) => SubscriptionResponse<T, W, D>;
+> = (state: T, data?: W) => SubscriptionResponse<T, W, D> | void;
 
 type Subscription<T, W extends unknown = undefined, D extends unknown = W> = {
   listener: string;
