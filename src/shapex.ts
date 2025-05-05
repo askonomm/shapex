@@ -31,7 +31,14 @@ export type EventCallback<
   T,
   W extends unknown = undefined,
   D extends unknown = undefined,
-> = (state: T, data?: W) => SubscriptionResponse<T, D> | void;
+> = (
+  state: T,
+  data?: W,
+) =>
+  | SubscriptionResponse<T, D>
+  | Promise<SubscriptionResponse<T, D>>
+  | void
+  | Promise<void>;
 
 type Subscription<
   T,
@@ -226,6 +233,49 @@ export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
     return differ(oldState, newState);
   };
 
+  const dispatcher = (
+    response: SubscriptionResponse<T, unknown>,
+    subscription: Subscription<T, unknown, unknown>,
+    callbackCount: number,
+    remainingSubscriptions: Subscription<T, unknown, unknown>[],
+  ) => {
+    // Updates state, and checks for state changes, and if any changes present,
+    // fires a dispatch for all the state listeners (if there are any).
+    if (response?.state !== undefined) {
+      const changes = changedState(_state, response.state);
+      _state = response.state;
+
+      for (let i = 0; i < changes.length; i++) {
+        dispatch(changes[i]);
+      }
+    }
+
+    // Dispatches events
+    if (response?.dispatch !== undefined) {
+      if (isSubscriptionResponseList(response.dispatch)) {
+        for (const dispatchee of response.dispatch) {
+          if (dispatchee?.with) {
+            dispatch(dispatchee.to, dispatchee.with);
+          } else {
+            dispatch(dispatchee.to);
+          }
+        }
+      } else {
+        if (response.dispatch?.with) {
+          dispatch(response.dispatch.to, response.dispatch.with);
+        } else {
+          dispatch(response.dispatch.to);
+        }
+      }
+    }
+
+    callbackCount++;
+
+    if (!subscription.once) {
+      remainingSubscriptions.push(subscription);
+    }
+  };
+
   /**
    * Dispatches an event with the given name and arguments.
    *
@@ -253,42 +303,33 @@ export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
         W,
         unknown
       >;
-      const response = withData ? callback(_state, withData) : callback(_state);
 
-      // Updates state, and checks for state changes, and if any changes present,
-      // fires a dispatch for all the state listeners (if there are any).
-      if (response?.state !== undefined) {
-        const changes = changedState(_state, response.state);
-        _state = response.state;
+      let response = withData ? callback(_state, withData) : callback(_state);
 
-        for (let i = 0; i < changes.length; i++) {
-          dispatch(changes[i]);
-        }
+      // Async response
+      if (response instanceof Promise) {
+        response.then((result) => {
+          if (!result) return;
+
+          dispatcher(
+            result,
+            subscription,
+            callbackCount,
+            remainingSubscriptions,
+          );
+        });
       }
 
-      // Dispatches events
-      if (response?.dispatch !== undefined) {
-        if (isSubscriptionResponseList(response.dispatch)) {
-          for (const dispatchee of response.dispatch) {
-            if (dispatchee?.with) {
-              dispatch(dispatchee.to, dispatchee.with);
-            } else {
-              dispatch(dispatchee.to);
-            }
-          }
-        } else {
-          if (response.dispatch?.with) {
-            dispatch(response.dispatch.to, response.dispatch.with);
-          } else {
-            dispatch(response.dispatch.to);
-          }
-        }
-      }
+      // Sync response
+      else {
+        if (!response) return;
 
-      callbackCount++;
-
-      if (!subscription.once) {
-        remainingSubscriptions.push(subscription);
+        dispatcher(
+          response,
+          subscription,
+          callbackCount,
+          remainingSubscriptions,
+        );
       }
     }
 
