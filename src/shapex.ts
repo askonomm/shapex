@@ -12,11 +12,7 @@ export type SubscriptionResponseDispatch<W extends unknown = undefined> = {
  * if you want to update state, and/or optionally also any events you
  * might want to dispatch.
  */
-export type SubscriptionResponse<
-  T,
-  W extends unknown = undefined,
-  D extends unknown = W
-> = {
+export type SubscriptionResponse<T, D extends unknown = undefined> = {
   state?: T;
   dispatch?:
     | SubscriptionResponseDispatch<D>
@@ -24,7 +20,7 @@ export type SubscriptionResponse<
 };
 
 const isSubscriptionResponseList = <W extends unknown = undefined>(
-  dispatch: SubscriptionResponseDispatch<W> | SubscriptionResponseDispatch<W>[]
+  dispatch: SubscriptionResponseDispatch<W> | SubscriptionResponseDispatch<W>[],
 ): dispatch is SubscriptionResponseDispatch<W>[] => Array.isArray(dispatch);
 
 /**
@@ -34,10 +30,14 @@ const isSubscriptionResponseList = <W extends unknown = undefined>(
 export type EventCallback<
   T,
   W extends unknown = undefined,
-  D extends unknown = W
-> = (state: T, data?: W) => SubscriptionResponse<T, W, D> | void;
+  D extends unknown = undefined,
+> = (state: T, data?: W) => SubscriptionResponse<T, D> | void;
 
-type Subscription<T, W extends unknown = undefined, D extends unknown = W> = {
+type Subscription<
+  T,
+  W extends unknown = undefined,
+  D extends unknown = undefined,
+> = {
   listener: string;
   callback: EventCallback<T, W, D>;
   once: boolean;
@@ -50,16 +50,16 @@ export type ShapeXInstance<T> = {
   /**
    * Subcribe to an event.
    */
-  subscribe: <W extends unknown = undefined, D extends unknown = W>(
+  subscribe: <W extends unknown = undefined, D extends unknown = undefined>(
     listener: string,
-    callback: EventCallback<T, W, D>
+    callback: EventCallback<T, W, D>,
   ) => number;
   /**
    * Subscribe to an event once.
    */
-  subscribeOnce: <W extends unknown = undefined, D extends unknown = W>(
+  subscribeOnce: <W extends unknown = undefined, D extends unknown = undefined>(
     listener: string,
-    callback: EventCallback<T, W, D>
+    callback: EventCallback<T, W, D>,
   ) => number;
 
   /**
@@ -109,9 +109,12 @@ export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
    * @param {EventCallback<T, W, D>} callback
    * @returns
    */
-  const subscribe = <W extends unknown = undefined, D extends unknown = W>(
+  const subscribe = <
+    W extends unknown = undefined,
+    D extends unknown = undefined,
+  >(
     listener: string,
-    callback: EventCallback<T, W, D>
+    callback: EventCallback<T, W, D>,
   ): number => {
     if (!_subscriptions.has(listener)) {
       _subscriptions.set(listener, []);
@@ -138,7 +141,7 @@ export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
    */
   const subscribeOnce = <W extends unknown = undefined, D extends unknown = W>(
     listener: string,
-    callback: EventCallback<T, W, D>
+    callback: EventCallback<T, W, D>,
   ): number => {
     if (!_subscriptions.has(listener)) {
       _subscriptions.set(listener, []);
@@ -171,11 +174,11 @@ export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
    */
   const changedState = <T extends object>(
     oldState: T,
-    newState: T
+    newState: T,
   ): string[] => {
     const paths = <R extends object>(
       state: R,
-      path: string
+      path: string,
     ): { path: string; value: unknown }[] => {
       const _paths = [] as { path: string; value: unknown }[];
 
@@ -232,7 +235,7 @@ export function ShapeX<T extends object>(initialState: T): ShapeXInstance<T> {
    */
   const dispatch = <W extends unknown = undefined>(
     to: string,
-    withData?: W
+    withData?: W,
   ): void => {
     if (!_subscriptions.has(to)) {
       return;
